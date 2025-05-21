@@ -18,6 +18,7 @@ namespace ComicVerse.Infrastructure.Data
         public DbSet<HQEditora> HQEditoras { get; set; }
         public DbSet<HQPersonagem> HQPersonagens { get; set; }
         public DbSet<HQEquipe> HQEquipes { get; set; }
+        public DbSet<Usuario> Usuarios { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -129,6 +130,45 @@ namespace ComicVerse.Infrastructure.Data
                     .WithMany(e => e.HQs)
                     .HasForeignKey(he => he.EquipeId)
                     .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<Usuario>(entity =>
+            {
+                entity.HasKey(u => u.Id);
+
+                entity.Property(u => u.Nome)
+                    .IsRequired()
+                    .HasMaxLength(100);
+
+                entity.Property(u => u.Email)
+                    .IsRequired()
+                    .HasMaxLength(100);
+
+                entity.Property(u => u.PasswordHash)
+                    .IsRequired();
+
+                entity.Property(u => u.PasswordSalt)
+                    .IsRequired();
+
+                entity.Property(u => u.Role)
+                    .IsRequired()
+                    .HasMaxLength(20)
+                    .HasDefaultValue("User");
+
+                // Índice único para o email
+                entity.HasIndex(u => u.Email)
+                    .IsUnique();
+
+                // Validação de formato de email
+                entity.Property(u => u.Email)
+                    .HasAnnotation("RegularExpression", @"^[^@\s]+@[^@\s]+\.[^@\s]+$");
+
+                // Configuração do tipo de coluna para os campos binários (específico para PostgreSQL)
+                entity.Property(u => u.PasswordHash)
+                    .HasColumnType("bytea");
+
+                entity.Property(u => u.PasswordSalt)
+                    .HasColumnType("bytea");
             });
 
             // Configurações adicionais
