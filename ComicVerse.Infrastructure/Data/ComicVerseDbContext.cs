@@ -147,9 +147,6 @@ namespace ComicVerse.Infrastructure.Data
                 entity.Property(u => u.PasswordHash)
                     .IsRequired();
 
-                entity.Property(u => u.PasswordSalt)
-                    .IsRequired();
-
                 entity.Property(u => u.Role)
                     .IsRequired()
                     .HasMaxLength(20)
@@ -165,10 +162,8 @@ namespace ComicVerse.Infrastructure.Data
 
                 // Configuração do tipo de coluna para os campos binários (específico para PostgreSQL)
                 entity.Property(u => u.PasswordHash)
-                    .HasColumnType("bytea");
-
-                entity.Property(u => u.PasswordSalt)
-                    .HasColumnType("bytea");
+                    .IsRequired()
+                    .HasMaxLength(255);
             });
 
             // Configurações adicionais

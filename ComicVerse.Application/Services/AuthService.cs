@@ -34,12 +34,9 @@ namespace ComicVerse.Application.Services
             if (await _usuarioRepo.ExisteUsuario(registroDto.Email))
                 throw new Exception("Email já está em uso");
 
-            CriarPasswordHash(registroDto.Senha, out byte[] passwordHash, out byte[] passwordSalt);
-
             var usuario = new Usuario(registroDto.Nome, registroDto.Email)
             {
-                PasswordHash = passwordHash,
-                PasswordSalt = passwordSalt
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(registroDto.Senha)
             };
 
             await _usuarioRepo.Adicionar(usuario);
@@ -57,7 +54,7 @@ namespace ComicVerse.Application.Services
         {
             var usuario = await _usuarioRepo.ObterPorEmail(loginDto.Email);
 
-            if (usuario == null || !VerificarPasswordHash(loginDto.Senha, usuario.PasswordHash, usuario.PasswordSalt))
+            if (usuario == null || !BCrypt.Net.BCrypt.Verify(loginDto.Senha, usuario.PasswordHash))
                 throw new Exception("Email ou senha incorretos");
 
             return new UsuarioRespostaDto
@@ -78,36 +75,23 @@ namespace ComicVerse.Application.Services
                 new Claim(ClaimTypes.Role, usuario.Role)
             };
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
-                _config.GetSection("Jwt:Key").Value));
+            // Sua chave Base64 atual é adequada para SHA256
+            var key = new SymmetricSecurityKey(
+                Convert.FromBase64String(_config["Jwt:Key"])); // Convertendo de Base64 para bytes
 
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
+            var creds = new SigningCredentials(
+                key,
+                SecurityAlgorithms.HmacSha256); // Algoritmo compatível com 256+ bits
 
-            var tokenDescriptor = new SecurityTokenDescriptor
-            {
-                Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.Now.AddDays(1),
-                SigningCredentials = creds
-            };
+            var token = new JwtSecurityToken(
+                issuer: _config["Jwt:Issuer"],
+                audience: _config["Jwt:Audience"],
+                claims: claims,
+                expires: DateTime.Now.AddDays(Convert.ToDouble(_config["Jwt:ExpireDays"])),
+                signingCredentials: creds
+            );
 
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var token = tokenHandler.CreateToken(tokenDescriptor);
-
-            return tokenHandler.WriteToken(token);
-        }
-
-        private void CriarPasswordHash(string senha, out byte[] passwordHash, out byte[] passwordSalt)
-        {
-            using var hmac = new HMACSHA512();
-            passwordSalt = hmac.Key;
-            passwordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(senha));
-        }
-
-        private bool VerificarPasswordHash(string senha, byte[] passwordHash, byte[] passwordSalt)
-        {
-            using var hmac = new HMACSHA512(passwordSalt);
-            var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(senha));
-            return computedHash.SequenceEqual(passwordHash);
+            return new JwtSecurityTokenHandler().WriteToken(token);
         }
     }
 }
