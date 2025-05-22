@@ -99,7 +99,7 @@ namespace ComicVerse.API.Controllers
             {
                 var edicao = await _edicaoService.Add(hqId, edicaoDto);
                 return CreatedAtAction(
-                    nameof(Get),
+                    nameof(GetById),
                     new { hqId, id = edicao.Id },
                     edicao);
             }
