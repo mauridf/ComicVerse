@@ -2,10 +2,10 @@
 {
     public class Edicao : BaseEntity
     {
-        public Guid HQId { get; internal set; }
+        public Guid HQId { get; set; }
         public int Numero { get; private set; }
         public string? Titulo { get; private set; }
-        public DateTime? DataLancamento { get; private set; }
+        public DateTime? DataLancamento { get; set; }
         public string? Imagem { get; private set; }
         public string? Observacoes { get; private set; }
         public bool Lida { get; internal set; }

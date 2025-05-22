@@ -1,5 +1,6 @@
 ﻿using ComicVerse.Core.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace ComicVerse.Infrastructure.Data
 {
@@ -19,6 +20,22 @@ namespace ComicVerse.Infrastructure.Data
         public DbSet<HQPersonagem> HQPersonagens { get; set; }
         public DbSet<HQEquipe> HQEquipes { get; set; }
         public DbSet<Usuario> Usuarios { get; set; }
+
+        protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+        {
+            configurationBuilder.Properties<DateTime>()
+                .HaveConversion<DateTimeToUtcConverter>();
+        }
+
+        public class DateTimeToUtcConverter : ValueConverter<DateTime, DateTime>
+        {
+            public DateTimeToUtcConverter()
+                : base(
+                    v => v.Kind == DateTimeKind.Utc ? v : v.ToUniversalTime(),
+                    v => DateTime.SpecifyKind(v, DateTimeKind.Utc))
+            {
+            }
+        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

@@ -20,12 +20,23 @@ namespace ComicVerse.Application.DTOs
 
     public class CreateHQDTO
     {
-        [Required]
+        [Required(ErrorMessage = "Título é obrigatório")]
+        [StringLength(150, ErrorMessage = "Título não pode exceder 150 caracteres")]
         public string Titulo { get; set; }
+
+        [StringLength(255, ErrorMessage = "Caminho da imagem não pode exceder 255 caracteres")]
         public string? Imagem { get; set; }
+
+        [StringLength(1000, ErrorMessage = "Descrição não pode exceder 1000 caracteres")]
         public string? Descricao { get; set; }
+
+        [EnsureValidGuids(ErrorMessage = "IDs de editoras inválidos")]
         public ICollection<Guid> EditorasIds { get; set; } = new List<Guid>();
+
+        [EnsureValidGuids(ErrorMessage = "IDs de personagens inválidos")]
         public ICollection<Guid> PersonagensIds { get; set; } = new List<Guid>();
+
+        [EnsureValidGuids(ErrorMessage = "IDs de equipes inválidos")]
         public ICollection<Guid> EquipesIds { get; set; } = new List<Guid>();
     }
 

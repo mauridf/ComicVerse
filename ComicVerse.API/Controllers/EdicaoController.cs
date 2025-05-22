@@ -37,24 +37,24 @@ namespace ComicVerse.API.Controllers
             return Ok(edicao);
         }
 
-        [HttpPost]
-        public async Task<ActionResult<EdicaoDTO>> Create(Guid hqId, CreateEdicaoDTO edicaoDto)
-        {
-            try
-            {
-                var edicao = await _edicaoService.Add(hqId, edicaoDto);
-                return CreatedAtAction(nameof(GetById), new { hqId, id = edicao.Id }, edicao);
-            }
-            catch (KeyNotFoundException)
-            {
-                return NotFound("HQ não encontrada");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Erro ao criar edição");
-                return BadRequest("Erro ao criar edição");
-            }
-        }
+        //[HttpPost]
+        //public async Task<ActionResult<EdicaoDTO>> Create(Guid hqId, CreateEdicaoDTO edicaoDto)
+        //{
+        //    try
+        //    {
+        //        var edicao = await _edicaoService.Add(hqId, edicaoDto);
+        //        return CreatedAtAction(nameof(GetById), new { hqId, id = edicao.Id }, edicao);
+        //    }
+        //    catch (KeyNotFoundException)
+        //    {
+        //        return NotFound("HQ não encontrada");
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex, "Erro ao criar edição");
+        //        return BadRequest("Erro ao criar edição");
+        //    }
+        //}
 
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(Guid hqId, Guid id, UpdateEdicaoDTO edicaoDto)

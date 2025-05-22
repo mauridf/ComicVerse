@@ -9,11 +9,13 @@ namespace ComicVerse.API.Controllers
     public class HQsController : ControllerBase
     {
         private readonly IHQService _hqService;
+        private readonly IEdicaoService _edicaoService;
         private readonly ILogger<HQsController> _logger;
 
-        public HQsController(IHQService hqService, ILogger<HQsController> logger)
+        public HQsController(IHQService hqService, IEdicaoService edicaoService, ILogger<HQsController> logger)
         {
             _hqService = hqService;
+            _edicaoService = edicaoService;
             _logger = logger;
         }
 
@@ -36,7 +38,7 @@ namespace ComicVerse.API.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<HQDTO>> Create(CreateHQDTO hqDto)
+        public async Task<ActionResult<HQDTO>> Create([FromBody] CreateHQDTO hqDto)
         {
             try
             {
@@ -89,16 +91,17 @@ namespace ComicVerse.API.Controllers
         }
 
         [HttpPost("{hqId}/edicoes")]
-        public async Task<IActionResult> AdicionarEdicao(Guid hqId, CreateEdicaoDTO edicaoDto)
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<EdicaoDTO>> AdicionarEdicao(Guid hqId,[FromBody] CreateEdicaoDTO edicaoDto)
         {
             try
             {
-                await _hqService.AdicionarEdicao(hqId, edicaoDto);
-                return NoContent();
-            }
-            catch (KeyNotFoundException)
-            {
-                return NotFound();
+                var edicao = await _edicaoService.Add(hqId, edicaoDto);
+                return CreatedAtAction(
+                    nameof(Get),
+                    new { hqId, id = edicao.Id },
+                    edicao);
             }
             catch (Exception ex)
             {

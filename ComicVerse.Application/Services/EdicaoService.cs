@@ -45,21 +45,14 @@ namespace ComicVerse.Application.Services
 
         public async Task<EdicaoDTO> Add(Guid hqId, CreateEdicaoDTO edicaoDto)
         {
-            if (!await _hqRepository.Exists(hqId))
-            {
-                throw new KeyNotFoundException("HQ não encontrada");
-            }
+            var edicao = _mapper.Map<Edicao>(edicaoDto);
+            edicao.HQId = hqId;
 
-            var edicao = new Edicao(
-                hqId: hqId,
-                numero: edicaoDto.Numero,
-                titulo: edicaoDto.Titulo,
-                dataLancamento: edicaoDto.DataLancamento,
-                imagem: edicaoDto.Imagem,
-                observacoes: edicaoDto.Observacoes,
-                lida: edicaoDto.Lida,
-                nota: edicaoDto.Nota
-            );
+            // Garante UTC se não foi tratado no DTO/mapper
+            if (edicao.DataLancamento.HasValue && edicao.DataLancamento.Value.Kind == DateTimeKind.Unspecified)
+            {
+                edicao.DataLancamento = DateTime.SpecifyKind(edicao.DataLancamento.Value, DateTimeKind.Utc);
+            }
 
             await _edicaoRepository.Add(edicao);
             return _mapper.Map<EdicaoDTO>(edicao);
